@@ -4,121 +4,179 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <title>NFT Radar</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-* { box-sizing: border-box; }
-body {
-  margin: 0; padding: 22px 16px;
-  background: #09090d; color: #f5f5f7;
-  font-family: Arial, sans-serif;
-}
-h1 { font-size: 25px; margin-bottom: 5px; }
-.sub { color: #92929f; font-size: 13px; margin-bottom: 25px; }
-.section { font-size: 12px; color: #a5a5b5; margin: 22px 0 12px; }
-label { display: block; font-size: 13px; margin: 14px 0 7px; }
-input, select {
-  width: 100%; padding: 14px; border-radius: 12px;
-  border: 1px solid #292933; background: #15151c;
-  color: white; font-size: 15px;
-}
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.toggle {
-  display: flex; align-items: center; justify-content: space-between;
-  background: #15151c; border-radius: 12px; padding: 15px;
-  margin-top: 10px; font-size: 14px;
-}
-.toggle input { width: 20px; height: 20px; accent-color: #9670ff; }
-button {
-  width: 100%; padding: 16px; margin-top: 24px;
-  background: #8960f5; color: white; border: 0;
-  border-radius: 13px; font-size: 16px; font-weight: bold;
-}
-#msg { color: #b9a5ff; font-size: 13px; margin-top: 14px; }
+*{box-sizing:border-box}
+body{margin:0;background:#0c0e12;color:#f3f5f8;font:15px Arial,sans-serif}
+main{max-width:560px;margin:auto;padding:18px}
+h1{font-size:24px}
+h2{font-size:17px}
+.note{font-size:12px;color:#929ba8;line-height:1.5}
+.card{background:#151920;border:1px solid #2a313c;border-radius:15px;padding:15px;margin:14px 0}
+input[type=search],input[type=number],select{width:100%;padding:12px;background:#1d232c;color:white;border:1px solid #343d49;border-radius:10px;margin:5px 0 10px}
+button{padding:10px;background:#252e3a;color:white;border:1px solid #3a4554;border-radius:9px}
+.actions{display:flex;gap:8px;margin-bottom:10px}
+.actions button{flex:1}
+.list{max-height:350px;overflow:auto}
+.item{display:flex;align-items:center;gap:10px;padding:10px;margin:6px 0;background:#11151b;border:1px solid #2a313c;border-radius:11px}
+.item img,.emoji{width:45px;height:45px;border-radius:9px;object-fit:cover;background:#29313c;display:grid;place-items:center;font-size:25px}
+.item .info{flex:1}
+.name{font-weight:bold}
+.sub{font-size:11px;color:#929ba8;margin-top:4px}
+input[type=checkbox],input[type=radio]{width:18px;height:18px;accent-color:#70a7ff}
+.bg{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #343d49;border-radius:10px;margin:8px 0}
+.swatch{width:35px;height:35px;border-radius:9px;border:1px solid #555}
+.bg span:nth-child(2){flex:1}
+.save{width:100%;background:#70a7ff;color:#07101e;font-weight:bold;padding:15px;border:0}
+#status{text-align:center;color:#aab5c4;font-size:12px;margin-top:12px}
 </style>
 </head>
 <body>
-<h1>✦ NFT RADAR</h1>
-<div class="sub">Налаштування моніторингу</div>
+<main>
+<h1>🎁 NFT Radar</h1>
+<p class="note">Вибери, які подарунки та оголошення відстежувати.</p>
 
-<div class="section">ДЖЕРЕЛА</div>
-<label>Маркетплейс</label>
+<section class="card">
+<h2>Маркетплейс</h2>
 <select id="market">
-  <option value="all">Усі джерела</option>
-  <option value="portals">Portals</option>
-  <option value="mrkt">MRKT</option>
+<option value="all">Portals + MRKT</option>
+<option value="portals">Portals</option>
+<option value="mrkt">MRKT</option>
 </select>
+</section>
 
-<div class="section">ФІЛЬТРИ NFT</div>
-<label>Колекція</label>
-<input id="collection" placeholder="Назва колекції або всі">
-
-<div class="grid">
-  <div>
-    <label>Мін. ціна (TON)</label>
-    <input id="min" type="number" min="0" step="any" value="0">
-  </div>
-  <div>
-    <label>Макс. ціна (TON)</label>
-    <input id="max" type="number" min="0" step="any" placeholder="Без ліміту">
-  </div>
+<section class="card">
+<h2>Колекції подарунків</h2>
+<input id="search" type="search" placeholder="🔎 Знайти подарунок...">
+<div class="actions">
+<button id="all">Вибрати видимі</button>
+<button id="clear">Очистити вибір</button>
 </div>
+<div id="list" class="list"></div>
+<p class="note">Поки каталог не підключено, нижче показані лише демонстраційні позиції. Вони не є реальними колекціями маркетплейсів.</p>
+</section>
 
-<label>Фон NFT</label>
-<input id="background" placeholder="Наприклад, Black">
+<section class="card">
+<h2>Фон подарунка</h2>
+<label class="bg">
+<span class="swatch" style="background:linear-gradient(135deg,#333,#eee)"></span>
+<span>Усі фони<div class="sub">Не обмежувати колір</div></span>
+<input type="radio" name="bg" value="all" checked>
+</label>
+<label class="bg">
+<span class="swatch" style="background:#050505"></span>
+<span>Тільки чорний<div class="sub">Відбирати чорний фон</div></span>
+<input type="radio" name="bg" value="black">
+</label>
+</section>
 
-<label>Модель / атрибут</label>
-<input id="model" placeholder="Необов'язково">
+<section class="card">
+<h2>Ціна, TON</h2>
+<label class="sub">Мінімальна ціна</label>
+<input id="min" type="number" min="0" step="0.1" placeholder="Без мінімуму">
+<label class="sub">Максимальна ціна</label>
+<input id="max" type="number" min="0" step="0.1" placeholder="Без максимуму">
+</section>
 
-<div class="section">СПОВІЩЕННЯ</div>
-<div class="toggle">
-  <span>Тільки нові лоти</span>
-  <input id="newOnly" type="checkbox" checked>
-</div>
-<div class="toggle">
-  <span>Тільки потенційно недооцінені</span>
-  <input id="undervalued" type="checkbox">
-</div>
+<section class="card">
+<label class="item"><span class="info">Тільки нові оголошення</span><input id="newOnly" type="checkbox" checked></label>
+<label class="item"><span class="info">Тільки недооцінені</span><input id="under" type="checkbox"></label>
+<p class="note">Виявлення недооцінених лотів потребує окремого аналізу ринкових цін.</p>
+</section>
 
-<button id="save">Зберегти фільтри</button>
-<div id="msg"></div>
+<button class="save" id="save">Зберегти фільтри</button>
+<div id="status"></div>
+</main>
 
 <script>
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
+const tg = window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
 
-document.getElementById('save').onclick = () => {
-  const min = Number(document.getElementById('min').value || 0);
-  const maxText = document.getElementById('max').value;
-  const max = maxText === '' ? null : Number(maxText);
+/* Демо-дані. Замінимо реальним каталогом після підключення API. */
+const gifts=[
+{id:"demo_1",name:"Демо-подарунок 1",emoji:"🎁"},
+{id:"demo_2",name:"Демо-подарунок 2",emoji:"🚀"},
+{id:"demo_3",name:"Демо-подарунок 3",emoji:"💎"},
+{id:"demo_4",name:"Демо-подарунок 4",emoji:"🧸"},
+{id:"demo_5",name:"Демо-подарунок 5",emoji:"🌹"}
+];
+const selected=new Set();
+const $=id=>document.getElementById(id);
 
-  if (min < 0 || (max !== null && (max < 0 || max < min))) {
-    document.getElementById('msg').textContent =
-      'Перевір мінімальну та максимальну ціну.';
-    return;
-  }
-
-  const filters = {
-    market: document.getElementById('market').value,
-    collection: document.getElementById('collection').value.trim(),
-    min_price: min,
-    max_price: max,
-    background: document.getElementById('background').value.trim(),
-    model: document.getElementById('model').value.trim(),
-    new_only: document.getElementById('newOnly').checked,
-    undervalued: document.getElementById('undervalued').checked
-  };
-
-  document.getElementById('msg').textContent =
-    'Інтерфейс готовий. Підключення до бота — наступний етап.';
-
-  if (tg.initData) {
-    tg.sendData(JSON.stringify(filters));
-  } else {
-    console.log(filters);
-  }
+function render(){
+ const q=$("search").value.trim().toLowerCase();
+ const list=$("list");
+ list.replaceChildren();
+ const shown=gifts.filter(g=>g.name.toLowerCase().includes(q));
+ if(!shown.length){
+  list.textContent="Нічого не знайдено";
+  return;
+ }
+ shown.forEach(g=>{
+  const label=document.createElement("label");
+  label.className="item";
+  const icon=document.createElement("div");
+  icon.className="emoji";
+  icon.textContent=g.emoji;
+  const info=document.createElement("div");
+  info.className="info";
+  const name=document.createElement("div");
+  name.className="name";
+  name.textContent=g.name;
+  const sub=document.createElement("div");
+  sub.className="sub";
+  sub.textContent="Демо — каталог ще не підключено";
+  info.append(name,sub);
+  const cb=document.createElement("input");
+  cb.type="checkbox";
+  cb.checked=selected.has(g.id);
+  cb.addEventListener("change",()=>{
+   if(cb.checked)selected.add(g.id);
+   else selected.delete(g.id);
+   render();
+  });
+  label.append(icon,info,cb);
+  list.append(label);
+ });
+}
+$("search").addEventListener("input",render);
+$("all").onclick=()=>{
+ const q=$("search").value.trim().toLowerCase();
+ gifts.filter(g=>g.name.toLowerCase().includes(q)).forEach(g=>selected.add(g.id));
+ render();
 };
+$("clear").onclick=()=>{selected.clear();render();};
+
+$("save").onclick=()=>{
+ const min=$("min").value.trim();
+ const max=$("max").value.trim();
+ if((min&&Number(min)<0)||(max&&Number(max)<0)){
+  $("status").textContent="Ціна не може бути від’ємною.";
+  return;
+ }
+ if(min&&max&&Number(min)>Number(max)){
+  $("status").textContent="Мінімальна ціна більша за максимальну.";
+  return;
+ }
+ const filters={
+  marketplace:$("market").value,
+  collections:[...selected],
+  background:document.querySelector('input[name="bg"]:checked').value,
+  min_price_ton:min?Number(min):null,
+  max_price_ton:max?Number(max):null,
+  new_only:$("newOnly").checked,
+  undervalued_only:$("under").checked
+ };
+ if(tg&&tg.initData){
+  tg.sendData(JSON.stringify(filters));
+  $("status").textContent="Дані передані Telegram. Потрібно, щоб бот умів їх приймати та зберігати.";
+ }else{
+  $("status").textContent="Відкрий цей інтерфейс через Telegram Mini App. Зараз це демо.";
+  console.log(filters);
+ }
+};
+render();
 </script>
 </body>
 </html>
