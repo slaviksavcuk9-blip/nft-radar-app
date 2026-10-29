@@ -92,6 +92,17 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;accent-color:#70a7
 <script>
 const tg = window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand();}
+ setTimeout(() => {
+ const info = document.createElement("p");
+ info.style.cssText = "color:#ffcc66;font-size:12px;word-break:break-all;";
+ info.textContent =
+  "Діагностика: " +
+  "WebApp: " + (!!window.Telegram?.WebApp) +
+  " | initData: " + (window.Telegram?.WebApp?.initData?.length || 0) +
+  " | Version: " + (window.Telegram?.WebApp?.version || "немає") +
+  " | Platform: " + (window.Telegram?.WebApp?.platform || "немає");
+ document.querySelector("main").appendChild(info);
+}, 500);
 
 /* Демо-дані. Замінимо реальним каталогом після підключення API. */
 const gifts=[
