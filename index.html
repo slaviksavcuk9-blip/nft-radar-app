@@ -179,7 +179,7 @@ $("save").onclick=()=>{
   new_only:$("newOnly").checked,
   undervalued_only:$("under").checked
  };
- if(tg&&tg.initData){
+ if(tg && typeof tg.sendData === "function"){
   tg.sendData(JSON.stringify(filters));
   $("status").textContent="Дані передані Telegram. Потрібно, щоб бот умів їх приймати та зберігати.";
  }else{
