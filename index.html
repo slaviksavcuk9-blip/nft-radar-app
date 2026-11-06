@@ -105,89 +105,158 @@ if(tg){tg.ready();tg.expand();}
 }, 500);
 
 /* Демо-дані. Замінимо реальним каталогом після підключення API. */
-const gifts=[
-{id:"demo_1",name:"Демо-подарунок 1",emoji:"🎁"},
-{id:"demo_2",name:"Демо-подарунок 2",emoji:"🚀"},
-{id:"demo_3",name:"Демо-подарунок 3",emoji:"💎"},
-{id:"demo_4",name:"Демо-подарунок 4",emoji:"🧸"},
-{id:"demo_5",name:"Демо-подарунок 5",emoji:"🌹"}
-];
-const selected=new Set();
-const $=id=>document.getElementById(id);
 
-function render(){
- const q=$("search").value.trim().toLowerCase();
- const list=$("list");
- list.replaceChildren();
- const shown=gifts.filter(g=>g.name.toLowerCase().includes(q));
- if(!shown.length){
-  list.textContent="Нічого не знайдено";
-  return;
- }
- shown.forEach(g=>{
-  const label=document.createElement("label");
-  label.className="item";
-  const icon=document.createElement("div");
-  icon.className="emoji";
-  icon.textContent=g.emoji;
-  const info=document.createElement("div");
-  info.className="info";
-  const name=document.createElement("div");
-  name.className="name";
-  name.textContent=g.name;
-  const sub=document.createElement("div");
-  sub.className="sub";
-  sub.textContent="Демо — каталог ще не підключено";
-  info.append(name,sub);
-  const cb=document.createElement("input");
-  cb.type="checkbox";
-  cb.checked=selected.has(g.id);
-  cb.addEventListener("change",()=>{
-   if(cb.checked)selected.add(g.id);
-   else selected.delete(g.id);
-   render();
-  });
-  label.append(icon,info,cb);
-  list.append(label);
- });
+let gifts = [];
+const selected = new Set();
+const $ = id => document.getElementById(id);
+
+function render() {
+    const q = $("search").value.trim().toLowerCase();
+    const list = $("list");
+    list.replaceChildren();
+
+    const shown = gifts.filter(g =>
+        g.name.toLowerCase().includes(q)
+    );
+
+    if (!shown.length) {
+        list.textContent = "Нічого не знайдено";
+        return;
+    }
+
+    shown.forEach(g => {
+        const label = document.createElement("label");
+        label.className = "item";
+
+        const icon = document.createElement("div");
+
+        if (g.photo_url) {
+            const img = document.createElement("img");
+            img.src = g.photo_url;
+            img.alt = g.name;
+            img.onerror = () => {
+                icon.textContent = "🎁";
+                img.replaceWith(icon);
+            };
+            icon.appendChild(img);
+        } else {
+            icon.className = "emoji";
+            icon.textContent = "🎁";
+        }
+
+        const info = document.createElement("div");
+        info.className = "info";
+
+        const name = document.createElement("div");
+        name.className = "name";
+        name.textContent = g.name;
+
+        const sub = document.createElement("div");
+        sub.className = "sub";
+        sub.textContent = "Колекція Portals";
+
+        info.append(name, sub);
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = selected.has(g.id);
+
+        cb.addEventListener("change", () => {
+            if (cb.checked) selected.add(g.id);
+            else selected.delete(g.id);
+            render();
+        });
+
+        label.append(icon, info, cb);
+        list.append(label);
+    });
 }
-$("search").addEventListener("input",render);
-$("all").onclick=()=>{
- const q=$("search").value.trim().toLowerCase();
- gifts.filter(g=>g.name.toLowerCase().includes(q)).forEach(g=>selected.add(g.id));
- render();
-};
-$("clear").onclick=()=>{selected.clear();render();};
 
-$("save").onclick=()=>{
- const min=$("min").value.trim();
- const max=$("max").value.trim();
- if((min&&Number(min)<0)||(max&&Number(max)<0)){
-  $("status").textContent="Ціна не може бути від’ємною.";
-  return;
- }
- if(min&&max&&Number(min)>Number(max)){
-  $("status").textContent="Мінімальна ціна більша за максимальну.";
-  return;
- }
- const filters={
-  marketplace:$("market").value,
-  collections:[...selected],
-  background:document.querySelector('input[name="bg"]:checked').value,
-  min_price_ton:min?Number(min):null,
-  max_price_ton:max?Number(max):null,
-  new_only:$("newOnly").checked,
-  undervalued_only:$("under").checked
- };
- if(tg && typeof tg.sendData === "function"){
-  tg.sendData(JSON.stringify(filters));
-  $("status").textContent="Дані передані Telegram. Потрібно, щоб бот умів їх приймати та зберігати.";
- }else{
-  $("status").textContent="Відкрий цей інтерфейс через Telegram Mini App. Зараз це демо.";
-  console.log(filters);
- }
+async function loadGifts() {
+    $("list").textContent = "Завантажуємо колекції...";
+
+    try {
+        const response = await fetch("./collections_public.json");
+
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
+
+        gifts = await response.json();
+
+        if (!Array.isArray(gifts)) {
+            throw new Error("Неправильний формат каталогу");
+        }
+
+        render();
+        $("status").textContent =
+            "Завантажено колекцій: " + gifts.length;
+
+    } catch (error) {
+        $("list").textContent = "Не вдалося завантажити каталог.";
+        $("status").textContent = error.message;
+    }
+}
+
+$("search").addEventListener("input", render);
+
+$("all").onclick = () => {
+    const q = $("search").value.trim().toLowerCase();
+
+    gifts
+        .filter(g => g.name.toLowerCase().includes(q))
+        .forEach(g => selected.add(g.id));
+
+    render();
 };
-render();
+
+$("clear").onclick = () => {
+    selected.clear();
+    render();
+};
+
+$("save").onclick = () => {
+    const min = $("min").value.trim();
+    const max = $("max").value.trim();
+
+    if ((min && Number(min) < 0) ||
+        (max && Number(max) < 0)) {
+        $("status").textContent =
+            "Ціна не може бути від’ємною.";
+        return;
+    }
+
+    if (min && max && Number(min) > Number(max)) {
+        $("status").textContent =
+            "Мінімальна ціна більша за максимальну.";
+        return;
+    }
+
+    const filters = {
+        marketplace: $("market").value,
+        collections: [...selected],
+        background: document.querySelector(
+            'input[name="bg"]:checked'
+        ).value,
+        min_price_ton: min ? Number(min) : null,
+        max_price_ton: max ? Number(max) : null,
+        new_only: $("newOnly").checked,
+        undervalued_only: $("under").checked
+    };
+
+    if (tg && typeof tg.sendData === "function") {
+        tg.sendData(JSON.stringify(filters));
+        $("status").textContent =
+            "Фільтри передані Telegram.";
+    } else {
+        $("status").textContent =
+            "Відкрий Mini App через Telegram.";
+        console.log(filters);
+    }
+};
+
+loadGifts();
+
 </script>
 </body>
 </html>
