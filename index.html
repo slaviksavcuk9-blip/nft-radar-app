@@ -59,16 +59,9 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;accent-color:#70a7
 
 <section class="card">
 <h2>Фон подарунка</h2>
-<label class="bg">
-<span class="swatch" style="background:linear-gradient(135deg,#333,#eee)"></span>
-<span>Усі фони<div class="sub">Не обмежувати колір</div></span>
-<input type="radio" name="bg" value="all" checked>
-</label>
-<label class="bg">
-<span class="swatch" style="background:#050505"></span>
-<span>Тільки чорний<div class="sub">Відбирати чорний фон</div></span>
-<input type="radio" name="bg" value="black">
-</label>
+<select id="background">
+  <option value="all">Усі фони</option>
+</select>
 </section>
 
 <section class="card">
@@ -235,9 +228,7 @@ $("save").onclick = () => {
     const filters = {
         marketplace: $("market").value,
         collections: [...selected],
-        background: document.querySelector(
-            'input[name="bg"]:checked'
-        ).value,
+        background: $("background").value,
         min_price_ton: min ? Number(min) : null,
         max_price_ton: max ? Number(max) : null,
         new_only: $("newOnly").checked,
@@ -254,7 +245,33 @@ $("save").onclick = () => {
         console.log(filters);
     }
 };
+async function loadBackdrops() {
+    const select = $("background");
 
+    try {
+        const response = await fetch("./backdrops_public.json");
+        if (!response.ok) throw new Error("HTTP " + response.status);
+
+        const backdrops = await response.json();
+
+        if (!Array.isArray(backdrops)) {
+            throw new Error("Неправильний формат списку фонів");
+        }
+
+        backdrops.forEach(name => {
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+
+        console.log("Завантажено фонів:", backdrops.length);
+    } catch (error) {
+        $("status").textContent = "Помилка завантаження фонів: " + error.message;
+    }
+}
+
+loadBackdrops();
 loadGifts();
 
 </script>
